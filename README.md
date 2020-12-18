@@ -2,7 +2,7 @@
 
 ## Overview
 
-**Still under development.**
+Text analyzer for **haiku**. This tries to find closest haiku player, and also tries to find season by IBM Watson NLC(Natural Language Classifier).
 
 
 ## How to setup
@@ -63,7 +63,14 @@
 
 ## Reference
 
-http://www.haikudiary.jp/haijin/
+- IBM Watson NLC
+
+  - https://www.ibm.com/jp-ja/cloud/watson-natural-language-classifier
+
+- Haiku samples
+
+  - http://www.haikudiary.jp/haijin/
+
 
 ## Copyright
 
