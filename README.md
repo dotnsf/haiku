@@ -1,4 +1,4 @@
-# haiku
+# Haiku
 
 ## Overview
 
