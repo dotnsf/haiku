@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<title>Haiku</title>
+<script type="text/javascript" src="//code.jquery.com/jquery-2.2.4.min.js"></script>
+<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.2.0/css/bootstrap.min.css" rel="stylesheet"/>
+<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.2.0/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.bundle.js"></script>
+<script src="//unpkg.com/chartjs-plugin-colorschemes"></script>
+
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="Haiku"/>
+
+<link rel="shortcut icon" href="/icon.png" type="image/png"/>
+<link rel="icon" href="/icon.png" type="image/png"/>
+<link rel="apple-touch-icon" href="/icon.png"/>
+
+<meta name="description" content="オンラインで俳句を入力することで、どの歌人の歌風に近いかを判別するサービスです。"/>
+<meta name="keywords" content="俳句,Haiku,AI,分類"/>
+
+<script>
+$(function(){
+  $('#haiku_form').submit( function(){
+    var text = $('#haiku_text').val();
+    if( text ){
+    console.log( 'text = ' + text );
+      classifyText( text );
+    }
+    return false;
+  });
+
+  $.ajax({
+    type: 'GET',
+    url: '/api/status',
+    success: function( result ){
+      console.log( result );
+    },
+    error: function( err ){
+      console.log( err );
+    }
+  });
+});
+
+function classifyText( text ){
+  $('#resultModalLabel').html( '' );
+  $('#td1').html( '<canvas id="chart1"></canvas>' );
+  $('#td2').html( '<canvas id="chart2"></canvas>' );
+  $.ajax({
+    type: 'POST',
+    url: '/api/classify',
+    data: { text: text },
+    success: function( result ){
+      if( result && result.status ){
+        $('#resultModalLabel').html( text );
+        var labels1 = [];
+        var data1 = [];
+        var labels2 = [];
+        var data2 = [];
+
+        result.classes1.forEach( function( class1 ){
+          labels1.push( class1.class_name );
+          data1.push( class1.confidence );
+        });
+        result.classes2.forEach( function( class2 ){
+          labels2.push( class2.class_name );
+          data2.push( class2.confidence );
+        });
+
+        var ctx1 = document.getElementById( 'chart1' );
+        var chart1 = new Chart( ctx1, {
+          type: 'pie',
+          data: {
+            labels: labels1,
+            datasets: [{
+              data: data1
+            }]
+          },
+          options: {
+            plugins: {
+              colorschemes: {
+                scheme: 'brewer.Paired12'
+              }
+            },
+            title: {
+              display: true,
+              text: '似た歌人'
+            }
+          }
+        });
+
+        var ctx2 = document.getElementById( 'chart2' );
+        var chart2 = new Chart( ctx2, {
+          type: 'pie',
+          data: {
+            labels: labels2,
+            datasets: [{
+              data: data2
+            }]
+          },
+          options: {
+            plugins: {
+              colorschemes: {
+                scheme: 'tableau.Tableau20'
+              }
+            },
+            title: {
+              display: true,
+              text: '推測した季節'
+            }
+          }
+        });
+
+        $('#resultModal').modal();
+      }
+    },
+    error: function( err ){
+      console.log( err );
+    }
+  });
+}
+</script>
+
+<style type="text/css">
+html, body{
+  text-align: center;
+  background-color: #fafafa;
+  font-size: 20px;
+  color: #333;
+}
+</style>
+</head>
+<body>
+
+<nav class="navbar fixed-top">
+  <div class="navbar-nav mr-auto">
+  </div>
+  <div class="navbar-nav">
+    <li class="nav-item" id="navitem">
+    </li>
+  </div>
+</nav>
+
+<div class="container">
+  <form id="haiku_form" method="POST" action="/api/classify">
+    <input type="text" id="haiku_text" class="form-control" placeholder="古池やかわず飛び込む水の音"/>
+    <input type="submit" style="display:none"/>
+  </form>
+</div>
+
+<div class="modal bd-example-modal-xl fade" id="resultModal" tabindex="-1" role="dialog" aria-labbelledby="resultModal" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title" id="resultModalLabel"></h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="resultmodal-body">
+        <table class="table">
+          <tbody>
+          <tr>
+            <!-- <canvas> の親要素のサイズで横幅を調整する -->
+            <td id="td1" style="position: relative; width: 50%"></td>
+            <td id="td2" style="position: relative; width: 50%"></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer btn-center">
+        <!--
+        <button type="button" class="btn btn-info btn-xs py-0" onClick="migrateFrom();"><i class="fas fa-file-export"></i></button>
+        -->
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

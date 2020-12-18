@@ -1,0 +1,46 @@
+swagger: '2.0'
+info:
+  description: Haiku API ドキュメント
+  version: 0.0.1
+  title: Haiku REST APIs
+host: localhost:8080
+basePath: /api
+tags:
+  - name: haiku
+    description: Haiku related API
+schemes:
+  - http
+  - https
+paths:
+  /status:
+    get:
+      tags:
+        - haiku
+      summary: 問い合わせステータス
+      description: 問い合わせステータス
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: 成功
+        '400':
+          description: エラー
+  /classify:
+    post:
+      tags:
+        - haiku
+      summary: 俳句分類
+      description: 俳句分類
+      produces:
+        - application/json
+      parameters:
+        - name: text
+          type: string
+          in: formData
+          description: 俳句テキスト
+          required: true
+      responses:
+        '200':
+          description: 成功
+        '400':
+          description: エラー
